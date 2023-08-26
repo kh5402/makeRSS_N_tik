@@ -72,13 +72,13 @@ jobs:
       run: echo "CHROMIUM_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
 
     - name: Run Pyppeteer Script
-      run: python3 Y_Sche.py # Pythonファイルのパスを適切に設定してね
+      run: python3 N_tik.py # Pythonファイルのパスを適切に設定してね
       timeout-minutes: 10
 
     - name: Commit and push changes
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add Y_Sche.xml
+        git add N_tik.xml
         git commit -m "Update schedule RSS feed" || exit 0 # 変更がない場合はエラーを無視
         git push
