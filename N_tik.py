@@ -61,7 +61,11 @@ last_height = driver.execute_script("return document.body.scrollHeight")
 while True:
     # スクロールする
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(10)  # ページがロードされるまでちょっと待つ
+    
+    # 新しい動画がロードされるまで待つ
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "新しい動画のクラス名"))
+    )
 
     # 新しい動画の位置を取得
     new_height = driver.execute_script("return document.body.scrollHeight")
