@@ -15,11 +15,11 @@ japan_tz = pytz.timezone('Asia/Tokyo')
 # 現在の日時を日本時間で取得
 current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-print("Selenium version:", webdriver.__version__)
-if 'webdriver' in globals():
-    print("webdriver is imported successfully!")
-else:
-    print("webdriver is not imported.")
+#print("Selenium version:", webdriver.__version__)
+#if 'webdriver' in globals():
+#    print("webdriver is imported successfully!")
+#else:
+#    print("webdriver is not imported.")
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # ヘッドレスモード
@@ -32,11 +32,18 @@ options.binary_location = "/usr/bin/chromium-browser"  # Chromiumのパスを指
 
 driver = webdriver.Chrome(options=options)
 
-if driver:
-    print("WebDriver instance is created successfully!")
-else:
-    print("Failed to create WebDriver instance.")
-print(driver.page_source)
+#if driver:
+#    print("WebDriver instance is created successfully!")
+#else:
+#    print("Failed to create WebDriver instance.")
+#print(driver.page_source)
+
+# XML（RSS）の基本構造を作成
+root = ET.Element("rss", version="2.0")
+channel = ET.SubElement(root, "channel")
+ET.SubElement(channel, "title").text = "TikTok Videos"
+ET.SubElement(channel, "link").text = "https://www.tiktok.com/"
+ET.SubElement(channel, "description").text = "Latest TikTok videos"
 
 # TikTokのページにアクセス
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
