@@ -42,7 +42,7 @@ existing_titles = set()
 for video in channel.findall('video'):
     title = video.find('title').text
     existing_titles.add(title)
-    #print(existing_titles) 
+    print(existing_titles) 
 
 discord_notify = []
 
