@@ -5,24 +5,69 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Setup Python
-      uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
-    - name: Install Chrome
-      run: sudo apt-get install -y google-chrome-stable
-    - name: Install ChromeDriver
-      run: |
-        CHROME_VERSION=$(google-chrome-stable --version | awk '{ print $3 }' | sed 's/\..*//')
-        DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-        wget "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/bin/chromedriver
-        sudo chmod +x /usr/bin/chromedriver
+        token: ${{ secrets.MY_SECRET_TOKEN }}
+      
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+          python-version: '3.x'
+
     - name: Install dependencies
       run: pip install selenium
+
+        
+    - name: Remove existing Chromium
+      run: sudo rm -f /usr/bin/chromium-browser
+
+    - name: Check Chromium Snap Path
+      run: |
+        snap info chromium
+    
+    - name: Restore Chromium from cache
+      id: cache-chromium
+      uses: actions/cache@v2
+      with:
+        #path: /usr/bin/chromium-browser
+        path: /snap/chromium/
+        key: my-chromium-cache-v1
+        restore-keys: Linux-chromium-
+
+    - name: Install Chromium
+      if: steps.cache-chromium.outputs.cache-hit != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser
+        chromium-browser --version # これでバージョンを確認できるよ😊
+
+        
+    - name: Find Chromium Path
+      run: |
+        which chromium-browser
+
+    - name: Check Chromium Path
+      run: ls -l /usr/bin/chromium-browser
+  
+    - name: Set Chromium Path
+      run: echo "CHROMIUM_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
+        
+
+      
     - name: Run script
       run: python your_script.py
+      timeout-minutes: 10
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add N_tik.xml
+        git commit -m "Update schedule RSS feed" || exit 0 # 変更がない場合はエラーを無視
+        git push
+
+
+      
