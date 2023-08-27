@@ -61,13 +61,13 @@ jobs:
       run: python your_script.py
       timeout-minutes: 10
 
-    - name: Commit and push changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add N_tik.xml
-        git commit -m "Update schedule RSS feed" || exit 0 # 変更がない場合はエラーを無視
-        git push
+    #- name: Commit and push changes
+    #  run: |
+    #    git config --local user.email "action@github.com"
+    #    git config --local user.name "GitHub Action"
+    #    git add N_tik.xml
+    #    git commit -m "Update schedule RSS feed" || exit 0 # 変更がない場合はエラーを無視
+    #    git push
 
 
       
