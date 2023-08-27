@@ -9,6 +9,7 @@ import pytz
 import xml.etree.ElementTree as ET
 import requests
 import os
+from xml.dom import minidom
 
 webhook_url = os.environ.get('DISCORD_WEBHOOK')
 xml_file = 'N_tik.xml'
@@ -97,9 +98,14 @@ for video in discord_notify:
 # XMLファイルを保存（エンコーディングをUTF-8に設定、改行も入れる）
 tree = ET.ElementTree(root)
 xml_str = ET.tostring(root, encoding='utf-8', method='xml')
-decoded_str = xml_str.decode('utf-8')
+
+# minidomできれいにフォーマットする
+dom = minidom.parseString(xml_str)
+pretty_xml_str = dom.toprettyxml(indent="  ")
 
 with open(xml_file, 'w', encoding='utf-8') as f:
-    f.write(decoded_str)
+    f.write(pretty_xml_str)
 
 driver.quit()
+
+
