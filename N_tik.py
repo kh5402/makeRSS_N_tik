@@ -18,6 +18,12 @@ options.add_argument("--headless")  # ヘッドレスモード
 
 driver = webdriver.Chrome(options=options)
 
+if driver:
+    print("WebDriver instance is created successfully!")
+else:
+    print("Failed to create WebDriver instance.")
+print(driver.page_source)
+
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 
 wait = WebDriverWait(driver, 10)
