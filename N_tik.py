@@ -110,7 +110,7 @@ for i, div_container in enumerate(div_containers):
 # Discord Webhookを使って通知
 for video in discord_notify:
     data = {
-        "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n}"
+        "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n"
     }
     requests.post(webhook_url, data=data)
 
