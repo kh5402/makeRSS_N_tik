@@ -15,6 +15,11 @@ else:
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # ヘッドレスモード
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-setuid-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-accelerated-2d-canvas')
+options.add_argument('--disable-gpu')
 
 driver = webdriver.Chrome(options=options)
 
