@@ -5,6 +5,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+from selenium import webdriver
+print("Selenium version:", webdriver.__version__)
+
+
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # ヘッドレスモード
 
