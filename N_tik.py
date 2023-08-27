@@ -42,6 +42,7 @@ existing_titles = set()
 for video in channel.findall('video'):
     title = video.find('title').text
     existing_titles.add(title)
+    print(existing_titles) 
 
 discord_notify = []
 
@@ -86,6 +87,7 @@ for i, div_container in enumerate(reversed(div_containers)):
         print(f"動画{i+1}でエラー: {e}")
 
 print('#discord_notify' + str(discord_notify))
+
 for video in discord_notify:
     data = {
         "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n"
