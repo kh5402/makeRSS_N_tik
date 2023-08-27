@@ -8,6 +8,13 @@ from datetime import datetime
 import pytz
 import xml.etree.ElementTree as ET
 import requests
+import os
+
+# Discord Webhook URLを環境変数から取得
+webhook_url = os.environ.get('DISCORD_WEBHOOK')
+
+#xmlファイル名
+xml_file = 'N_tik.xml'
 
 # 日本のタイムゾーンを設定
 japan_tz = pytz.timezone('Asia/Tokyo')
@@ -48,9 +55,22 @@ for _ in range(3):
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 
+# 既存のXMLファイルを読み込む
+try:
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    channel = root.find('channel')
+except FileNotFoundError:
+    # ファイルがない場合、新しく作る
+    root = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(root, "channel")
+    ET.SubElement(channel, "title").text = "乃木坂 TikTok Videos"
+    ET.SubElement(channel, "link").text = "https://www.tiktok.com/"
+    ET.SubElement(channel, "description").text = "Latest TikTok videos"
+
 # 既存のタイトルをセットに保存
 existing_titles = set()
-tree = ET.parse('N_tik.xml')
+tree = ET.parse(xml_file)
 root = tree.getroot()
 for video in root.findall('video'):
     title = video.find('title').text
@@ -88,15 +108,14 @@ for i, div_container in enumerate(div_containers):
         print(f"動画{i+1}でエラー: {e}")
         
 # Discord Webhookを使って通知
-webhook_url = "your_discord_webhook_url_here"
 for video in discord_notify:
     data = {
-        "content": f"新しい動画があります！\nタイトル: {video['title']}\nURL: {video['url']}\n日付: {video['date']}\n視聴回数: {video['views']}"
+        "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n}"
     }
     requests.post(webhook_url, data=data)
 
 # XMLファイルを保存
 tree = ET.ElementTree(root)
-tree.write("N_tik.xml")
+tree.write(xml_file)
 
 driver.quit()
