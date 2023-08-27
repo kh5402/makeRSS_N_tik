@@ -58,7 +58,7 @@ jobs:
 
       
     - name: Run script
-      run: python your_script.py
+      run: python N_tik.py
       timeout-minutes: 10
 
     #- name: Commit and push changes
