@@ -24,4 +24,4 @@ jobs:
       uses: nanasess/setup-chromedriver@master
 
     - name: Run script
-      run: python main.py
+      run: python N_tik.py
