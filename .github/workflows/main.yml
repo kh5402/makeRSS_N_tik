@@ -22,6 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install selenium
+        pip install pytz
 
     - name: Install Compatible Chromedriver
       run: |
