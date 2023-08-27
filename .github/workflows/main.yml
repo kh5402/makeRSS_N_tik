@@ -1,3 +1,6 @@
+name: Run Selenium Script
+on:
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
