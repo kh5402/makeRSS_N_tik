@@ -51,10 +51,10 @@ WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'bo
 wait = WebDriverWait(driver, 20)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 
-# 10回スクロールして出てくる動画を取得
-for _ in range(15):
+# 3回スクロールして出てくる動画を取得
+for _ in range(3):
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-    time.sleep(10)
+    time.sleep(2)
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 #print(div_containers)
@@ -94,7 +94,12 @@ for video in discord_notify:
     }
     requests.post(webhook_url, data=data)
 
+# XMLファイルを保存（エンコーディングをUTF-8に設定、改行も入れる）
 tree = ET.ElementTree(root)
-tree.write(xml_file)
+xml_str = ET.tostring(root, encoding='utf-8', method='xml')
+decoded_str = xml_str.decode('utf-8')
+
+with open(xml_file, 'w', encoding='utf-8') as f:
+    f.write(decoded_str)
 
 driver.quit()
