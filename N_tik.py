@@ -56,6 +56,7 @@ for _ in range(10):
     time.sleep(2)
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
+print(div_containers)
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
