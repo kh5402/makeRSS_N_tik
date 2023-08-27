@@ -5,8 +5,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-from selenium import webdriver
-
 print("Selenium version:", webdriver.__version__)
 if 'webdriver' in globals():
     print("webdriver is imported successfully!")
@@ -20,6 +18,7 @@ options.add_argument('--disable-setuid-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--disable-accelerated-2d-canvas')
 options.add_argument('--disable-gpu')
+options.binary_location = "/usr/bin/chromium-browser"  # Chromiumのパスを指定
 
 driver = webdriver.Chrome(options=options)
 
