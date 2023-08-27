@@ -34,7 +34,6 @@ driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 
 # ページがちゃんとロードされるまで待つ
 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-
 wait = WebDriverWait(driver, 10)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 
@@ -42,7 +41,7 @@ for _ in range(3):
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
     time.sleep(2)
 
-div_containers = driver.find_elements_by_class_name("tiktok-x6y88p-DivItemContainerV2")
+div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 
 for i, div_container in enumerate(div_containers):
     try:
