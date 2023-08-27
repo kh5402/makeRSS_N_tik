@@ -20,9 +20,7 @@ jobs:
           python-version: '3.x'
 
     - name: Install dependencies
-      run: |
-        pip install selenium
-        pip install pytz
+      run: pip install -r requirements.txt
 
     - name: Install Compatible Chromedriver
       run: |
