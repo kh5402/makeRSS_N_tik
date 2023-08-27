@@ -44,8 +44,11 @@ div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemConta
 
 for i, div_container in enumerate(div_containers):
     try:
-        video_views = div_container.find_element_by_class_name("video-count").text
-        video_desc = div_container.find_element_by_class_name("tiktok-16ou6xi-DivTagCardDesc").text
+        # find_element_by_class_nameを使う前に、div_containerが何か確認する
+        print(f"div_container {i+1}: {div_container.text}")
+
+        video_views = div_container.find_element(By.CLASS_NAME, "video-count").text
+        video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text
         print(f"動画{i+1}")
         print(f"ビデオの視聴回数: {video_views}")
         print(f"ビデオの説明: {video_desc}")
