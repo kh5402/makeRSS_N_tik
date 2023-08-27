@@ -21,7 +21,7 @@ jobs:
       run: |
         pip install selenium
 
-　  - name: Set up Selenium and Chromium
+    - name: Set up Selenium and Chromium
       #if: steps.cache-chromium.outputs.cache-hit != 'true'
       run: |
         sudo apt-get update
