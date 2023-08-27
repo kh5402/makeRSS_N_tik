@@ -1,35 +1,28 @@
 name: Run Selenium Script
 on:
   workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-
-    - name: Install dependencies
-      run: pip install selenium
-
-    - name: Setup Chrome
+    - name: Install Chrome
+      run: sudo apt-get install -y google-chrome-stable
+    - name: Install ChromeDriver
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-
-    - name: Setup ChromeDriver
-      run: |
-        CHROME_VERSION=$(google-chrome-stable --version | grep -oE "[0-9]+.[0-9]+.[0-9]+")
+        CHROME_VERSION=$(google-chrome-stable --version | awk '{ print $3 }' | sed 's/\..*//')
         DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
         wget "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
         unzip chromedriver_linux64.zip
         sudo mv chromedriver /usr/bin/chromedriver
-        sudo chown root:root /usr/bin/chromedriver
         sudo chmod +x /usr/bin/chromedriver
-
+    - name: Install dependencies
+      run: pip install selenium
     - name: Run script
       run: python your_script.py
