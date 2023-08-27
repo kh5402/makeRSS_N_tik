@@ -45,8 +45,7 @@ async def main():
 
     # 後で重複チェックするときの為の一覧
     existing_schedules_check = {(date, extract_url_part(url)) for date, _, url, _, _ in existing_schedules}
-    print(existing_schedules_check)
-    
+
     # 新規情報を保存するリスト
     new_schedules = []
 
@@ -72,7 +71,7 @@ async def main():
     response = await page.goto(url)
 
     # ログ出力を追加
-    print("現在のHTTPヘッダー:", response.headers)
+    #print("現在のHTTPヘッダー:", response.headers)
 
     # ページのHTMLを取得
     html = await page.content()
@@ -111,7 +110,7 @@ async def main():
             
             # 新規情報の確認 URLは変わるので日付とタイトルだけで確認
             extracted_url = extract_url_part(url)
-            print(extracted_url)
+            #print(extracted_url)
             if (date, extracted_url) not in existing_schedules_check:
                 new_schedules.append((date, title, url, category, start_time))
             
@@ -141,7 +140,7 @@ async def main():
     # RSSフィードを生成
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
-    SubElement(channel, "title").text = "弓木奈於のスケジュール"
+    SubElement(channel, "title").text = "乃木坂46のTiktok"
     SubElement(channel, "description").text = ""
     SubElement(channel, "link").text = ""
     for date, title, url, category, start_time in all_schedules:
