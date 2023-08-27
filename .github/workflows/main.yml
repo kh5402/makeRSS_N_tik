@@ -57,7 +57,8 @@ jobs:
     - name: Set Chromium Path
       run: echo "CHROMIUM_PATH=/usr/bin/chromium-browser" >> $GITHUB_ENV
         
-
+    - name: Check Chromium Version
+      run: chromium-browser --version
       
     - name: Run script
       run: python N_tik.py
