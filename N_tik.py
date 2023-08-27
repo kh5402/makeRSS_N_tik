@@ -46,8 +46,8 @@ for video in channel.findall('video'):
 discord_notify = []
 
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
-WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-wait = WebDriverWait(driver, 20)
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+wait = WebDriverWait(driver, 10)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 
 # 10回スクロールして出てくる動画を取得
@@ -61,7 +61,7 @@ last_height = driver.execute_script("return document.body.scrollHeight")
 while True:
     # スクロールする
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(2)  # ページがロードされるまでちょっと待つ
+    time.sleep(10)  # ページがロードされるまでちょっと待つ
 
     # 新しい動画の位置を取得
     new_height = driver.execute_script("return document.body.scrollHeight")
