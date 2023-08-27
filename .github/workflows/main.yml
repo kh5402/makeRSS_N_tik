@@ -5,7 +5,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+  
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
