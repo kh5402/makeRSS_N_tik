@@ -48,10 +48,15 @@ for i, div_container in enumerate(div_containers):
         print(f"div_container {i+1}: {div_container.text}")
 
         video_views = div_container.find_element(By.CLASS_NAME, "video-count").text
-        video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text
+        video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text        
+        video_date = div_container.find_element(By.CLASS_NAME, "some-class-related-to-date").text
+        video_url = div_container.find_element(By.CLASS_NAME, "some-class-related-to-url").get_attribute('href')
+ 
         print(f"動画{i+1}")
         print(f"ビデオの視聴回数: {video_views}")
         print(f"ビデオの説明: {video_desc}")
+        print(f"ビデオの日付: {video_date}")
+        print(f"ビデオのURL: {video_url}")
         print("------")
     except Exception as e:
         print(f"動画{i+1}でエラー: {e}")
