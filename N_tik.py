@@ -4,6 +4,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+from datetime import datetime
+
+# 現在の日時を取得
+current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 print("Selenium version:", webdriver.__version__)
 if 'webdriver' in globals():
@@ -49,8 +53,8 @@ for i, div_container in enumerate(div_containers):
 
         video_views = div_container.find_element(By.CLASS_NAME, "video-count").text
         video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text        
-        video_date = div_container.find_element(By.CLASS_NAME, "some-class-related-to-date").text
-        video_url = div_container.find_element(By.CLASS_NAME, "some-class-related-to-url").get_attribute('href')
+        video_date = current_time
+        video_url = div_container.find_element(By.CLASS_NAME, "tiktok-1wrhn5c-AMetaCaptionLine").get_attribute('href')
  
         print(f"動画{i+1}")
         print(f"ビデオの視聴回数: {video_views}")
