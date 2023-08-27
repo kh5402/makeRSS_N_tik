@@ -51,9 +51,27 @@ wait = WebDriverWait(driver, 10)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 
 # 10回スクロールして出てくる動画を取得
-for _ in range(10):
-    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-    time.sleep(2)
+#for _ in range(10):
+#    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
+#    time.sleep(2)
+
+# 最後の動画の位置を初期化
+last_height = driver.execute_script("return document.body.scrollHeight")
+
+while True:
+    # スクロールする
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(2)  # ページがロードされるまでちょっと待つ
+
+    # 新しい動画の位置を取得
+    new_height = driver.execute_script("return document.body.scrollHeight")
+
+    # スクロールが最後まで行ったらループを抜ける
+    if new_height == last_height:
+        break
+
+    # 最後の動画の位置を更新
+    last_height = new_height
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 
