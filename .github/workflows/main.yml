@@ -20,14 +20,17 @@ jobs:
     - name: Install dependencies
       run: |
         pip install selenium
+        
+    - name: Get Chromium Version
+      id: chromium_version
+      run: |
+        CHROMIUM_VERSION=$(chromium-browser --version | awk '{ print $2 }' | sed 's/\..*//')
+        echo "CHROMIUM_VERSION=$CHROMIUM_VERSION" >> $GITHUB_ENV
 
-    - name: Set up Selenium and Chromium
-      #if: steps.cache-chromium.outputs.cache-hit != 'true'
+    - name: Install Compatible Chromedriver
       run: |
         sudo apt-get update
-        sudo apt-get install -y chromium-chromedriver
-        #sudo cp -f /usr/lib/chromium-browser/chromedriver /usr/bin
-
+        sudo apt-get install -y chromium-chromedriver=$CHROMIUM_VERSION.*
         #chromium-browser --version # これでバージョンを確認できるよ😊
    
     - name: Find Chromium Path
@@ -43,14 +46,7 @@ jobs:
     - name: Check Chromium Version
       run: chromium-browser --version
       
-    - name: Install Chrome
-      run: |
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo dpkg -i google-chrome-stable_current_amd64.deb
-        google-chrome-stable --version
 
-    - name: Set Chrome Binary Path
-      run: echo "CHROME_BIN=/usr/bin/google-chrome-stable" >> $GITHUB_ENV
     
     - name: Run script
       run: python N_tik.py
