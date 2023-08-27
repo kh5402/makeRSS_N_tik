@@ -15,12 +15,6 @@ japan_tz = pytz.timezone('Asia/Tokyo')
 # 現在の日時を日本時間で取得
 current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-#print("Selenium version:", webdriver.__version__)
-#if 'webdriver' in globals():
-#    print("webdriver is imported successfully!")
-#else:
-#    print("webdriver is not imported.")
-
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # ヘッドレスモード
 options.add_argument('--no-sandbox')
@@ -32,11 +26,6 @@ options.binary_location = "/usr/bin/chromium-browser"  # Chromiumのパスを指
 
 driver = webdriver.Chrome(options=options)
 
-#if driver:
-#    print("WebDriver instance is created successfully!")
-#else:
-#    print("Failed to create WebDriver instance.")
-#print(driver.page_source)
 
 # XML（RSS）の基本構造を作成
 root = ET.Element("rss", version="2.0")
@@ -59,6 +48,17 @@ for _ in range(3):
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 
+# 既存のタイトルをセットに保存
+existing_titles = set()
+tree = ET.parse('N_tik.xml')
+root = tree.getroot()
+for video in root.findall('video'):
+    title = video.find('title').text
+    existing_titles.add(title)
+
+# Discordに送る新しい動画のリスト
+discord_notify = []
+
 for i, div_container in enumerate(div_containers):
     try:
         # find_element_by_class_nameを使う前に、div_containerが何か確認する
@@ -68,14 +68,35 @@ for i, div_container in enumerate(div_containers):
         video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text        
         video_date = current_time
         video_url = div_container.find_element(By.CLASS_NAME, "tiktok-1wrhn5c-AMetaCaptionLine").get_attribute('href')
- 
-        print(f"動画{i+1}")
-        print(f"ビデオの視聴回数: {video_views}")
-        print(f"ビデオの説明: {video_desc}")
-        print(f"ビデオの日付: {video_date}")
-        print(f"ビデオのURL: {video_url}")
-        print("------")
+
+        if video_desc not in existing_titles:
+            discord_notify.append({
+                'title': video_desc,
+                'url': video_url,
+                'date': video_date,
+                'views': video_views
+            })
+
+            # XMLに新しい動画の情報を追加
+            video_elem = ET.SubElement(channel, "video")
+            ET.SubElement(video_elem, "title").text = video_desc
+            ET.SubElement(video_elem, "url").text = video_url
+            ET.SubElement(video_elem, "date").text = video_date
+            ET.SubElement(video_elem, "views").text = video_views
+            
     except Exception as e:
         print(f"動画{i+1}でエラー: {e}")
+        
+# Discord Webhookを使って通知
+webhook_url = "your_discord_webhook_url_here"
+for video in discord_notify:
+    data = {
+        "content": f"新しい動画があります！\nタイトル: {video['title']}\nURL: {video['url']}\n日付: {video['date']}\n視聴回数: {video['views']}"
+    }
+    requests.post(webhook_url, data=data)
+
+# XMLファイルを保存
+tree = ET.ElementTree(root)
+tree.write("N_tik.xml")
 
 driver.quit()
