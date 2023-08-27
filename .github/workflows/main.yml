@@ -20,25 +20,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install selenium
-        pip freeze
-
-        
-    - name: Remove existing Chromium
-      run: sudo rm -f /usr/bin/chromium-browser
-
-    - name: Check Chromium Snap Path
-      run: |
-        snap info chromium
     
-    - name: Restore Chromium from cache
-      id: cache-chromium
-      uses: actions/cache@v2
-      with:
-        #path: /usr/bin/chromium-browser
-        path: /snap/chromium/
-        key: my-chromium-cache-v1
-        restore-keys: Linux-chromium-
-
     - name: Install Chromium
       if: steps.cache-chromium.outputs.cache-hit != 'true'
       run: |
