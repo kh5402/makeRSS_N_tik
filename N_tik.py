@@ -24,7 +24,11 @@ else:
     print("Failed to create WebDriver instance.")
 print(driver.page_source)
 
+# TikTokのページにアクセス
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
+
+# ページがちゃんとロードされるまで待つ
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
 
 wait = WebDriverWait(driver, 10)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
