@@ -42,7 +42,7 @@ existing_titles = set()
 for video in channel.findall('video'):
     title = video.find('title').text
     existing_titles.add(title)
-    print(existing_titles) 
+    #print(existing_titles) 
 
 discord_notify = []
 
@@ -58,7 +58,7 @@ for _ in range(10):
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 #print(div_containers)
-print(enumerate(reversed(div_containers)))
+#print(enumerate(reversed(div_containers)))
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
@@ -67,7 +67,7 @@ for i, div_container in enumerate(reversed(div_containers)):
         video_date = current_time
         video_url = div_container.find_element(By.CLASS_NAME, "tiktok-1wrhn5c-AMetaCaptionLine").get_attribute('href')
 
-        print(video_desc)
+        #print(video_desc)
         
         if video_desc not in existing_titles:
             discord_notify.append({
