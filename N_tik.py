@@ -46,8 +46,8 @@ for video in channel.findall('video'):
 discord_notify = []
 
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-wait = WebDriverWait(driver, 10)
+WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+wait = WebDriverWait(driver, 20)
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 
 # 10回スクロールして出てくる動画を取得
@@ -74,6 +74,7 @@ while True:
     last_height = new_height
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
+print(div_containers)
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
