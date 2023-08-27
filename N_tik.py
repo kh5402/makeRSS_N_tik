@@ -5,9 +5,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from datetime import datetime
+import pytz
+import xml.etree.ElementTree as ET
+import requests
 
-# 現在の日時を取得
-current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+# 日本のタイムゾーンを設定
+japan_tz = pytz.timezone('Asia/Tokyo')
+
+# 現在の日時を日本時間で取得
+current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
 print("Selenium version:", webdriver.__version__)
 if 'webdriver' in globals():
