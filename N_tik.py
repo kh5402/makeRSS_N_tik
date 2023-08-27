@@ -6,8 +6,12 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 
 from selenium import webdriver
-print("Selenium version:", webdriver.__version__)
 
+print("Selenium version:", webdriver.__version__)
+if 'webdriver' in globals():
+    print("webdriver is imported successfully!")
+else:
+    print("webdriver is not imported.")
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")  # ヘッドレスモード
