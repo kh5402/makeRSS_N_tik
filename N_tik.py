@@ -40,7 +40,7 @@ async def main():
     webhook_url = os.environ['WEBHOOK_URL']
 
     # 既存のXMLファイルがあれば、その情報を取得
-    existing_file = 'Y_Sche.xml'
+    existing_file = 'N_tik.xml'
     existing_schedules = get_existing_schedules(existing_file) if os.path.exists(existing_file) else set()
 
     # 後で重複チェックするときの為の一覧
@@ -50,84 +50,72 @@ async def main():
     # 新規情報を保存するリスト
     new_schedules = []
 
-    # 先月の1日から3ヶ月先までのyyyymmを生成
-    start_date = (datetime.today().replace(day=1) - timedelta(days=1)).replace(day=1)
-    end_date = start_date + timedelta(days=90)
-    current_date = start_date
-    schedules = []
-    while current_date <= end_date:
-        
-        yyyymm = current_date.strftime('%Y%m')
-        url = f"https://www.nogizaka46.com/s/n46/media/list?dy={yyyymm}&members={{%22member%22:[%2255387%22]}}"
-        print('yyyymm：' + yyyymm + ' url：' + url)
-
-        
-        # Pyppeteerでブラウザを開く
-        browser = await launch(
-            executablePath='/usr/bin/chromium-browser',
-            headless=True,
-            args=[
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gpu'
-            ],
-            defaultViewport=None,
-            userDataDir='./user_data'
-        )
-        
-        page = await browser.newPage()
-        response = await page.goto(url)
-
-        # ログ出力を追加
-        print("現在のHTTPヘッダー:", response.headers)
-
-        # ページのHTMLを取得
-        html = await page.content()
-        
-        # BeautifulSoupで解析
-        soup = BeautifulSoup(html, 'html.parser')
-
-        # スケジュール情報の取得
-        day_schedules = soup.find_all('div', class_='sc--day')
-
-        # 各スケジュールの情報を取得
-        for day_schedule in day_schedules:
-            date_tag = day_schedule.find('div', class_='sc--day__hd js-pos a--tx')
-            if date_tag is None:
-                continue
-            date = f"{yyyymm[:4]}/{yyyymm[4:]}/{date_tag.find('p', class_='sc--day__d f--head').text}"
+    #
+    url = "https://www.tiktok.com/@nogizaka46_official"
             
-            schedule_links = day_schedule.find_all('a', class_='m--scone__a hv--op')
-            
-            for link in schedule_links:
-                
-                title = re.search(r'<p class="m--scone__ttl">(.*?)</p>', str(link.find('p', class_='m--scone__ttl'))).group(1)
-                title_tag = link.find('p', class_='m--scone__ttl')
-                if title_tag:
-                    title = title_tag.get_text()
-                title = html_unescape(str(title)) 
-                    
-                url = link['href']
-                url = html_unescape(str(url))
-                
-                category = link.find('p', class_='m--scone__cat__name').text
-                start_time_tag = link.find('p', class_='m--scone__start')
-                start_time = start_time_tag.text if start_time_tag else ''
-
-                
-                # 新規情報の確認 URLは変わるので日付とタイトルだけで確認
-                extracted_url = extract_url_part(url)
-                print(extracted_url)
-                if (date, extracted_url) not in existing_schedules_check:
-                    new_schedules.append((date, title, url, category, start_time))
-                
-        # 次の月へ        
-        current_date = (current_date + timedelta(days=31)).replace(day=1)
-        if current_date.day != 1: # 月の最初の日ではない場合
-            current_date = (current_date + timedelta(days=1)).replace(day=1) # 月を1つ進める
+    # Pyppeteerでブラウザを開く
+    browser = await launch(
+        executablePath='/usr/bin/chromium-browser',
+        headless=True,
+        args=[
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+        ],
+        defaultViewport=None,
+        userDataDir='./user_data'
+    )
     
+    page = await browser.newPage()
+    response = await page.goto(url)
+
+    # ログ出力を追加
+    print("現在のHTTPヘッダー:", response.headers)
+
+    # ページのHTMLを取得
+    html = await page.content()
+    
+    # BeautifulSoupで解析
+    soup = BeautifulSoup(html, 'html.parser')
+    print(soup)
+
+    # スケジュール情報の取得
+    day_schedules = soup.find_all('div', class_='sc--day')
+
+    # 各スケジュールの情報を取得
+    for day_schedule in day_schedules:
+        date_tag = day_schedule.find('div', class_='sc--day__hd js-pos a--tx')
+        if date_tag is None:
+            continue
+        date = f"{yyyymm[:4]}/{yyyymm[4:]}/{date_tag.find('p', class_='sc--day__d f--head').text}"
+        
+        schedule_links = day_schedule.find_all('a', class_='m--scone__a hv--op')
+        
+        for link in schedule_links:
+            
+            title = re.search(r'<p class="m--scone__ttl">(.*?)</p>', str(link.find('p', class_='m--scone__ttl'))).group(1)
+            title_tag = link.find('p', class_='m--scone__ttl')
+            if title_tag:
+                title = title_tag.get_text()
+            title = html_unescape(str(title)) 
+                
+            url = link['href']
+            url = html_unescape(str(url))
+                
+            category = link.find('p', class_='m--scone__cat__name').text
+            start_time_tag = link.find('p', class_='m--scone__start')
+            start_time = start_time_tag.text if start_time_tag else ''
+
+            
+            # 新規情報の確認 URLは変わるので日付とタイトルだけで確認
+            extracted_url = extract_url_part(url)
+            print(extracted_url)
+            if (date, extracted_url) not in existing_schedules_check:
+                new_schedules.append((date, title, url, category, start_time))
+            
+        
     # 新規情報があれば、Discordへ通知
     print('# 新規情報があれば、Discordへ通知')
     print(new_schedules)
