@@ -40,8 +40,8 @@ except FileNotFoundError:
     ET.SubElement(channel, "description").text = "Latest TikTok videos"
 
 existing_titles = set()
-for video in channel.findall('video'):
-    title = video.find('title').text
+for item in channel.findall('item'):
+    title = item.find('title').text
     existing_titles.add(title)
 print(existing_titles) 
 
@@ -63,7 +63,6 @@ div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemConta
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
-        video_views = div_container.find_element(By.CLASS_NAME, "video-count").text
         video_desc = div_container.find_element(By.CLASS_NAME, "tiktok-16ou6xi-DivTagCardDesc").text        
         video_date = current_time
         video_url = div_container.find_element(By.CLASS_NAME, "tiktok-1wrhn5c-AMetaCaptionLine").get_attribute('href')
@@ -75,14 +74,12 @@ for i, div_container in enumerate(reversed(div_containers)):
                 'title': video_desc,
                 'url': video_url,
                 'date': video_date,
-                'views': video_views
             })
 
-            video_elem = ET.SubElement(channel, "video")
-            ET.SubElement(video_elem, "title").text = video_desc
-            ET.SubElement(video_elem, "url").text = video_url
-            ET.SubElement(video_elem, "date").text = video_date
-            ET.SubElement(video_elem, "views").text = video_views
+            item_elem = ET.SubElement(channel, "item")
+            ET.SubElement(item_elem, "title").text = video_desc
+            ET.SubElement(item_elem, "url").text = video_url
+            ET.SubElement(item_elem, "date").text = video_date
             
     except Exception as e:
         print(f"動画{i+1}でエラー: {e}")
