@@ -100,6 +100,9 @@ xml_str = ET.tostring(root, encoding='utf-8', method='xml')
 dom = minidom.parseString(xml_str)
 pretty_xml_str = dom.toprettyxml(indent="  ")
 
+# 空白行を取り除く
+pretty_xml_str = os.linesep.join([s for s in pretty_xml_str.splitlines() if s.strip()])
+
 with open(xml_file, 'w', encoding='utf-8') as f:
     f.write(pretty_xml_str)
 
