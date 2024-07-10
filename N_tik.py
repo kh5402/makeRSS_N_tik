@@ -59,7 +59,8 @@ print("body 要素が見つかりました。") # 待機条件1 成功
 
 print("----- 待機条件2: 動画コンテナの出現 -----") # 待機条件2
 wait = WebDriverWait(driver, 60)
-wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-hz5yk3-DivVideoFeedV2 ecyq5ls0")))
+# 少なくとも1つの動画コンテナ要素が表示されるまで待機
+wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-hz5yk3-DivVideoFeedV2 ecyq5ls0"))) 
 print("動画コンテナが見つかりました。") # 待機条件2 成功
 
 print("----- スクロール開始 -----") # スクロール開始
