@@ -50,16 +50,18 @@ discord_notify = []
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
 wait = WebDriverWait(driver, 20)
-wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
+#wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
+wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-833rgq-DivShareLayoutMain ee7zj8d4")))
 
 # 3回スクロールして出てくる動画を取得
 for _ in range(3):
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
     time.sleep(2)
 
-div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
+#div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
+div_containers = driver.find_elements(By.CLASS_NAME, "css-833rgq-DivShareLayoutMain ee7zj8d4")
 #print(div_containers)
-print(enumerate(reversed(div_containers)))
+#print(enumerate(reversed(div_containers)))
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
