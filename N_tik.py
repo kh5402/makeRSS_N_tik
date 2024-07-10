@@ -59,7 +59,7 @@ for _ in range(3):
 
 div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
 #print(div_containers)
-#print(enumerate(reversed(div_containers)))
+print(enumerate(reversed(div_containers)))
 
 for i, div_container in enumerate(reversed(div_containers)):
     try:
