@@ -49,7 +49,7 @@ discord_notify = []
 
 driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-wait = WebDriverWait(driver, 20)
+wait = WebDriverWait(driver, 60)
 #wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
 wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-hz5yk3-DivVideoFeedV2 ecyq5ls0")))
 
