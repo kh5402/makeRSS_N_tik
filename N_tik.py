@@ -18,7 +18,12 @@ japan_tz = pytz.timezone('Asia/Tokyo')
 current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
 options = webdriver.ChromeOptions()
-options.add_argument("--headless")
+# User-Agentを最新のものに設定
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36") 
+
+# Headlessモードを無効にする場合は、以下の行をコメントアウト
+options.add_argument("--headless")  
+
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-setuid-sandbox')
 options.add_argument('--disable-dev-shm-usage')
@@ -57,22 +62,22 @@ print("----- 待機条件1: body 要素の出現 -----") # 待機条件1
 WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
 print("body 要素が見つかりました。") # 待機条件1 成功
 
-print("----- 待機条件2: 動画コンテナの出現 -----") # 待機条件2
-wait = WebDriverWait(driver, 60)
+print("----- 待機条件2: 動画コンテナの出現 -----") 
+wait = WebDriverWait(driver, 120)
 # 少なくとも1つの動画コンテナ要素が表示されるまで待機
-wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-x6y88p-DivItemContainerV2 e19c29qe8"))) 
-print("動画コンテナが見つかりました。") # 待機条件2 成功
+target_container = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "css-x6y88p-DivItemContainerV2 e19c29qe8"))) 
+print("動画コンテナが見つかりました。") 
 
-print("----- スクロール開始 -----") # スクロール開始
+print("----- スクロール開始 -----") 
 # 3回スクロールして出てくる動画を取得
 for i in range(3):
     driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-    print(f"{i+1}回目のスクロール完了") # スクロール完了
+    print(f"{i+1}回目のスクロール完了")
     time.sleep(2)
 
-print("----- 動画コンテナ取得 -----") # 動画コンテナ取得
-div_containers = driver.find_elements(By.CLASS_NAME, "css-x6y88p-DivItemContainerV2 e19c29qe8")
-print(f"動画コンテナ数: {len(div_containers)}") # コンテナ数
+# スクロール後、保存しておいたtarget_containerから情報を取得
+print("----- 動画コンテナ取得 -----")
+print(f"動画コンテナ: {target_container}")
 
 print("----- 動画情報取得開始 -----") # 動画情報取得開始
 for i, div_container in enumerate(reversed(div_containers)):
