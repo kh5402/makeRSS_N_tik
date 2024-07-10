@@ -51,7 +51,7 @@ driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
 wait = WebDriverWait(driver, 20)
 #wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")))
-wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-833rgq-DivShareLayoutMain ee7zj8d4")))
+wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, "css-hz5yk3-DivVideoFeedV2 ecyq5ls0")))
 
 # 3回スクロールして出てくる動画を取得
 for _ in range(3):
@@ -59,7 +59,7 @@ for _ in range(3):
     time.sleep(2)
 
 #div_containers = driver.find_elements(By.CLASS_NAME, "tiktok-x6y88p-DivItemContainerV2")
-div_containers = driver.find_elements(By.CLASS_NAME, "css-833rgq-DivShareLayoutMain ee7zj8d4")
+div_containers = driver.find_elements(By.CLASS_NAME, "css-hz5yk3-DivVideoFeedV2 ecyq5ls0")
 #print(div_containers)
 #print(enumerate(reversed(div_containers)))
 
