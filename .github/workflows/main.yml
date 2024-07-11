@@ -43,7 +43,10 @@ jobs:
         
     - name: Check Chromium Version
       run: chromium-browser --version
-
+      
+    - name: Install Playwright # Playwright をインストール
+      run: pip install playwright
+      
     - name: Run Selenium script
       run: python N_tik.py
       timeout-minutes: 10
@@ -56,7 +59,7 @@ jobs:
     - name: Install Playwright
       run: npm i playwright
     - name: Run Playwright script (必要があれば)
-      run: python your_playwright_script.py  # Playwrightを使うスクリプト名に置き換えてください
+      run: python N_tik.py  # Playwrightを使うスクリプト名に置き換えてください
     # --- ここまで Playwright の設定 ---
 
     - name: Commit and push changes
