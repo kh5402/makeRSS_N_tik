@@ -1,101 +1,54 @@
-import asyncio
-from playwright.async_api import async_playwright
-from datetime import datetime
-import pytz
-import xml.etree.ElementTree as ET
+import feedparser
 import requests
 import os
+from datetime import datetime, timedelta
+import pytz
+import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+# Discord webhook URL
 webhook_url = os.environ.get('DISCORD_WEBHOOK')
-xml_file = 'N_tik.xml'
 
+# TikTok RSSフィードのURL (conoro/tiktok-rss-flatを使用)
+rss_feed_url = "https://tiktok-rss.vercel.app/nogizaka46_official"
+
+# XMLファイルのパス
+xml_file = 'N_tik.xml'  # ファイル名を修正
+
+# タイムゾーンの設定
 japan_tz = pytz.timezone('Asia/Tokyo')
-current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-async def run(playwright):
-    print("----- XML 読み込み開始 -----")
+def send_discord_notification(video_title, video_link, video_published):
+    """Discordに通知を送信する関数"""
+    message = f"乃木坂46の新しいTikTok動画！\n\n**{video_title}**\n{video_link}\n\n公開日時: {video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')}"
+    data = {"content": message}
+    requests.post(webhook_url, data=data)
+
+def load_existing_videos(xml_file):
+    """XMLファイルから既存の動画情報を読み込む"""
     try:
         tree = ET.parse(xml_file)
         root = tree.getroot()
-        channel = root.find('channel')
-        print("XML ファイルを読み込みました。")
+        existing_videos = {item.find('url').text: item.find('date').text for item in root.findall('./channel/item')}
+        return existing_videos
     except FileNotFoundError:
-        print("XML ファイルが見つかりませんでした。新規作成します。")
-        root = ET.Element("rss", version="2.0")
-        channel = ET.SubElement(root, "channel")
-        ET.SubElement(channel, "title").text = "乃木坂 TikTok Videos"
-        ET.SubElement(channel, "link").text = "https://www.tiktok.com/"
-        ET.SubElement(channel, "description").text = "Latest TikTok videos"
+        return {}
 
-    existing_titles = set()
-    for item in channel.findall('item'):
-        title = item.find('title').text
-        existing_titles.add(title)
-    print(f"既存タイトル: {existing_titles}")
+def save_videos_to_xml(videos, xml_file):
+    """動画情報をXMLファイルに保存する"""
+    root = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(root, "channel")
+    ET.SubElement(channel, "title").text = "乃木坂46 TikTok Videos"
+    ET.SubElement(channel, "link").text = rss_feed_url
+    ET.SubElement(channel, "description").text = "Latest TikTok videos from conoro/tiktok-rss-flat"
 
-    discord_notify = []
+    for video_url, video_date in videos.items():
+        item_elem = ET.SubElement(channel, "item")
+        ET.SubElement(item_elem, "title").text = ""  # タイトルは空欄
+        ET.SubElement(item_elem, "url").text = video_url
+        ET.SubElement(item_elem, "date").text = video_date
 
-    browser = await playwright.chromium.launch()
-    page = await browser.new_page()
-    print("----- TikTok ページアクセス開始 -----")
-    await page.goto("https://www.tiktok.com/@nogizaka46_official?lang=jp")
-
-    print("----- 動画コンテナの出現を待つ -----")
-    # セレクタを修正
-    await page.wait_for_selector('.css-x6y88p-DivItemContainerV2.e19c29qe8', timeout=60000) 
-
-    print("----- スクロール開始 -----")
-    # スクロール処理を3回繰り返す
-    for i in range(3):
-        await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-        print(f"{i+1}回目のスクロール完了")
-        await asyncio.sleep(5)  # スクロール間隔を5秒に設定
-
-    print("----- 動画情報取得開始 -----")
-    video_containers = await page.query_selector_all('.css-x6y88p-DivItemContainerV2.e19c29qe8') 
-    for i, video_container in enumerate(reversed(video_containers)):
-        try:
-            print(f"----- 動画{i+1}の処理開始 -----")
-            # タイトルを取得
-            video_desc_element = await video_container.query_selector('.css-j7du6l-DivTagCardDesc .css-1wrhn5c-AMetaCaptionLine .css-or44y0-DivContainer')
-            video_desc = await video_desc_element.inner_text() if video_desc_element else ''
-            print(f"動画{i+1} タイトル: {video_desc}")
-
-            # URLを取得
-            video_url_element = await video_container.query_selector('.css-j7du6l-DivTagCardDesc .css-1wrhn5c-AMetaCaptionLine')
-            video_url = await video_url_element.get_attribute('href') if video_url_element else ''
-            print(f"動画{i+1} URL: {video_url}")
-
-            if video_desc not in existing_titles:
-                discord_notify.append({
-                    'title': video_desc,
-                    'url': video_url,
-                    'date': current_time,
-                })
-
-                item_elem = ET.SubElement(channel, "item")
-                ET.SubElement(item_elem, "title").text = video_desc
-                ET.SubElement(item_elem, "url").text = video_url
-                ET.SubElement(item_elem, "date").text = current_time
-                print(f"動画{i+1} 新規動画として追加しました。")
-            else:
-                print(f"動画{i+1} 既存動画のためスキップします。")
-
-        except Exception as e:
-            print(f"動画{i+1}でエラー: {e}")
-
-    print("----- Discord 通知開始 -----")
-    print(f"Discord 通知リスト: {discord_notify}")
-
-    for video in discord_notify:
-        data = {
-            "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n"
-        }
-        requests.post(webhook_url, data=data)
-        print(f"動画 '{video['title']}' の通知を送信しました。")
-
-    # XMLファイルを保存（エンコーディングをUTF-8に設定、改行も入れる）
+    # XMLファイルを保存 (エンコーディングをUTF-8に設定、改行も入れる)
     tree = ET.ElementTree(root)
     xml_str = ET.tostring(root, encoding='utf-8', method='xml')
 
@@ -108,13 +61,30 @@ async def run(playwright):
 
     with open(xml_file, 'w', encoding='utf-8') as f:
         f.write(pretty_xml_str)
-        print(f"XML ファイル '{xml_file}' を保存しました。")
 
-    await browser.close()
-    print("----- 処理完了 -----")
+def main():
+    # XMLファイルから既存の動画情報を読み込む
+    existing_videos = load_existing_videos(xml_file)
 
-async def main():
-    async with async_playwright() as playwright:
-        await run(playwright)
+    # RSSフィードを取得
+    feed = feedparser.parse(rss_feed_url)
 
-asyncio.run(main())
+    # 新しい動画があればDiscordに通知し、XMLファイルに保存
+    for entry in feed.entries:
+        video_url = entry.link
+        if video_url in existing_videos:
+            continue  # 既存の動画はスキップ
+
+        video_title = entry.title
+        video_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S %z")
+
+        # 24時間以内に公開された動画のみ通知
+        if video_published > datetime.now(pytz.utc) - timedelta(hours=24):
+            send_discord_notification(video_title, video_url, video_published)
+            existing_videos[video_url] = video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+    # 動画情報をXMLファイルに保存
+    save_videos_to_xml(existing_videos, xml_file)
+
+if __name__ == "__main__":
+    main()
