@@ -1,4 +1,4 @@
-name: Run Selenium and Playwright Scripts
+name: Run Selenium Script
 
 on:
   workflow_dispatch:
