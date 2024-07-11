@@ -42,7 +42,8 @@ async def run(playwright):
     await page.goto("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 
     print("----- 動画コンテナの出現を待つ -----")
-    await page.wait_for_selector('.css-x6y88p-DivItemContainerV2') 
+    # セレクタを修正
+    await page.wait_for_selector('.css-x6y88p-DivItemContainerV2.e19c29qe8', timeout=60000) 
 
     print("----- スクロール開始 -----")
     # スクロール処理を3回繰り返す
@@ -52,7 +53,7 @@ async def run(playwright):
         await asyncio.sleep(5)  # スクロール間隔を5秒に設定
 
     print("----- 動画情報取得開始 -----")
-    video_containers = await page.query_selector_all('.css-x6y88p-DivItemContainerV2')
+    video_containers = await page.query_selector_all('.css-x6y88p-DivItemContainerV2.e19c29qe8') 
     for i, video_container in enumerate(reversed(video_containers)):
         try:
             print(f"----- 動画{i+1}の処理開始 -----")
