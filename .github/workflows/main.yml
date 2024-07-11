@@ -1,4 +1,5 @@
-name: Run Selenium Script
+name: Run Selenium and Playwright Scripts
+
 on:
   workflow_dispatch:
   #schedule:
@@ -22,7 +23,7 @@ jobs:
       with:
           python-version: '3.x'
 
-    - name: Install dependencies
+    - name: Install Python dependencies
       run: pip install -r requirements.txt
 
     - name: Install Compatible Chromedriver
@@ -43,9 +44,20 @@ jobs:
     - name: Check Chromium Version
       run: chromium-browser --version
 
-    - name: Run script
+    - name: Run Selenium script
       run: python N_tik.py
       timeout-minutes: 10
+
+    # --- ここから Playwright の設定 ---
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+    - name: Install Playwright
+      run: npm i playwright
+    - name: Run Playwright script (必要があれば)
+      run: python your_playwright_script.py  # Playwrightを使うスクリプト名に置き換えてください
+    # --- ここまで Playwright の設定 ---
 
     - name: Commit and push changes
       run: |
