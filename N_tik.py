@@ -13,10 +13,11 @@ webhook_url = os.environ.get('DISCORD_WEBHOOK')
 rss_feed_url = "https://tiktok-rss.vercel.app/nogizaka46_official"
 
 # XMLファイルのパス
-xml_file = 'N_tik.xml'  # ファイル名を修正
+xml_file = 'N_tik.xml'
 
 # タイムゾーンの設定
 japan_tz = pytz.timezone('Asia/Tokyo')
+
 
 def send_discord_notification(video_title, video_link, video_published):
     """Discordに通知を送信する関数"""
@@ -24,15 +25,6 @@ def send_discord_notification(video_title, video_link, video_published):
     data = {"content": message}
     requests.post(webhook_url, data=data)
 
-def load_existing_videos(xml_file):
-    """XMLファイルから既存の動画情報を読み込む"""
-    try:
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-        existing_videos = {item.find('url').text: item.find('date').text for item in root.findall('./channel/item')}
-        return existing_videos
-    except FileNotFoundError:
-        return {}
 
 def save_videos_to_xml(videos, xml_file):
     """動画情報をXMLファイルに保存する"""
@@ -42,11 +34,11 @@ def save_videos_to_xml(videos, xml_file):
     ET.SubElement(channel, "link").text = rss_feed_url
     ET.SubElement(channel, "description").text = "Latest TikTok videos from conoro/tiktok-rss-flat"
 
-    for video_url, video_date in videos.items():
+    for video in videos:
         item_elem = ET.SubElement(channel, "item")
-        ET.SubElement(item_elem, "title").text = ""  # タイトルは空欄
-        ET.SubElement(item_elem, "url").text = video_url
-        ET.SubElement(item_elem, "date").text = video_date
+        ET.SubElement(item_elem, "title").text = video['title']
+        ET.SubElement(item_elem, "url").text = video['url']
+        ET.SubElement(item_elem, "date").text = video['date']
 
     # XMLファイルを保存 (エンコーディングをUTF-8に設定、改行も入れる)
     tree = ET.ElementTree(root)
@@ -63,28 +55,27 @@ def save_videos_to_xml(videos, xml_file):
         f.write(pretty_xml_str)
 
 def main():
-    # XMLファイルから既存の動画情報を読み込む
-    existing_videos = load_existing_videos(xml_file)
-
     # RSSフィードを取得
     feed = feedparser.parse(rss_feed_url)
-
-    # 新しい動画があればDiscordに通知し、XMLファイルに保存
+    
+    new_videos = []
     for entry in feed.entries:
-        video_url = entry.link
-        if video_url in existing_videos:
-            continue  # 既存の動画はスキップ
-
         video_title = entry.title
+        video_url = entry.link
         video_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S %z")
-
+        
         # 24時間以内に公開された動画のみ通知
         if video_published > datetime.now(pytz.utc) - timedelta(hours=24):
             send_discord_notification(video_title, video_url, video_published)
-            existing_videos[video_url] = video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
+        
+        new_videos.append({
+            'title': video_title,
+            'url': video_url,
+            'date': video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
+        })
 
     # 動画情報をXMLファイルに保存
-    save_videos_to_xml(existing_videos, xml_file)
+    save_videos_to_xml(new_videos, xml_file)
 
 if __name__ == "__main__":
     main()
