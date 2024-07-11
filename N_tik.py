@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
 # Discord webhook URL
-#webhook_url = os.environ.get('DISCORD_WEBHOOK')
+webhook_url = os.environ.get('DISCORD_WEBHOOK')
 
 # TikTok RSSフィードのURL (conoro/tiktok-rss-flatを使用)
 rss_feed_url = "https://tiktok-rss.vercel.app/nogizaka46_official"
@@ -19,11 +19,11 @@ xml_file = 'N_tik.xml'
 japan_tz = pytz.timezone('Asia/Tokyo')
 
 
-#def send_discord_notification(video_title, video_link, video_published):
-#    """Discordに通知を送信する関数"""
-#    message = f"乃木坂46の新しいTikTok動画！\n\n**{video_title}**\n{video_link}\n\n公開日時: {video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')}"
-#    data = {"content": message}
-#    requests.post(webhook_url, data=data)
+# def send_discord_notification(video_title, video_link, video_published):
+#     """Discordに通知を送信する関数"""
+#     message = f"乃木坂46の新しいTikTok動画！\n\n**{video_title}**\n{video_link}\n\n公開日時: {video_published.astimezone(japan_tz).strftime('%Y-%m-%d %H:%M:%S')}"
+#     data = {"content": message}
+#     requests.post(webhook_url, data=data)
 
 
 def save_videos_to_xml(videos, xml_file):
@@ -54,20 +54,27 @@ def save_videos_to_xml(videos, xml_file):
     with open(xml_file, 'w', encoding='utf-8') as f:
         f.write(pretty_xml_str)
 
+
 def main():
     # RSSフィードを取得
     feed = feedparser.parse(rss_feed_url)
-    
+
+    print("---------- feed ----------")  # feedの内容確認
+    print(feed)
+
     new_videos = []
     for entry in feed.entries:
         video_title = entry.title
         video_url = entry.link
         video_published = datetime.strptime(entry.published, "%a, %d %b %Y %H:%M:%S %z")
-        
+
+        print("---------- entry ----------")  # entryの内容確認
+        print(entry)
+
         # 24時間以内に公開された動画のみ通知
-        #if video_published > datetime.now(pytz.utc) - timedelta(hours=24):
-        #    send_discord_notification(video_title, video_url, video_published)
-        
+        # if video_published > datetime.now(pytz.utc) - timedelta(hours=24):
+        #     send_discord_notification(video_title, video_url, video_published)
+
         new_videos.append({
             'title': video_title,
             'url': video_url,
@@ -76,6 +83,7 @@ def main():
 
     # 動画情報をXMLファイルに保存
     save_videos_to_xml(new_videos, xml_file)
+
 
 if __name__ == "__main__":
     main()
