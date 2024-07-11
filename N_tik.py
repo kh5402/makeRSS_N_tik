@@ -1,9 +1,5 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
+import asyncio
+from playwright.async_api import async_playwright
 from datetime import datetime
 import pytz
 import xml.etree.ElementTree as ET
@@ -17,91 +13,107 @@ xml_file = 'N_tik.xml'
 japan_tz = pytz.timezone('Asia/Tokyo')
 current_time = datetime.now(japan_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-options = webdriver.ChromeOptions()
-# User-Agentを最新のものに設定
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36") 
+async def run(playwright):
+    print("----- XML 読み込み開始 -----")
+    try:
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        channel = root.find('channel')
+        print("XML ファイルを読み込みました。")
+    except FileNotFoundError:
+        print("XML ファイルが見つかりませんでした。新規作成します。")
+        root = ET.Element("rss", version="2.0")
+        channel = ET.SubElement(root, "channel")
+        ET.SubElement(channel, "title").text = "乃木坂 TikTok Videos"
+        ET.SubElement(channel, "link").text = "https://www.tiktok.com/"
+        ET.SubElement(channel, "description").text = "Latest TikTok videos"
 
-# Headlessモードを無効にする場合は、以下の行をコメントアウト
-options.add_argument("--headless") 
+    existing_titles = set()
+    for item in channel.findall('item'):
+        title = item.find('title').text
+        existing_titles.add(title)
+    print(f"既存タイトル: {existing_titles}")
 
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-setuid-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-accelerated-2d-canvas')
-options.add_argument('--disable-gpu')
-options.binary_location = "/usr/bin/chromium-browser"
+    discord_notify = []
 
-driver = webdriver.Chrome(options=options)
+    browser = await playwright.chromium.launch()
+    page = await browser.new_page()
+    print("----- TikTok ページアクセス開始 -----")
+    await page.goto("https://www.tiktok.com/@nogizaka46_official?lang=jp")
 
-print("----- XML 読み込み開始 -----") 
-try:
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
-    channel = root.find('channel')
-    print("XML ファイルを読み込みました。") 
-except FileNotFoundError:
-    print("XML ファイルが見つかりませんでした。新規作成します。") 
-    root = ET.Element("rss", version="2.0")
-    channel = ET.SubElement(root, "channel")
-    ET.SubElement(channel, "title").text = "乃木坂 TikTok Videos"
-    ET.SubElement(channel, "link").text = "https://www.tiktok.com/"
-    ET.SubElement(channel, "description").text = "Latest TikTok videos"
+    print("----- 動画コンテナの出現を待つ -----")
+    await page.wait_for_selector('.css-x6y88p-DivItemContainerV2') 
 
-existing_titles = set()
-for item in channel.findall('item'):
-    title = item.find('title').text
-    existing_titles.add(title)
-print(f"既存タイトル: {existing_titles}") 
+    print("----- スクロール開始 -----")
+    # スクロール処理を3回繰り返す
+    for i in range(3):
+        await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+        print(f"{i+1}回目のスクロール完了")
+        await asyncio.sleep(5)  # スクロール間隔を5秒に設定
 
-discord_notify = []
+    print("----- 動画情報取得開始 -----")
+    video_containers = await page.query_selector_all('.css-x6y88p-DivItemContainerV2')
+    for i, video_container in enumerate(reversed(video_containers)):
+        try:
+            print(f"----- 動画{i+1}の処理開始 -----")
+            # タイトルを取得
+            video_desc_element = await video_container.query_selector('.css-j7du6l-DivTagCardDesc .css-1wrhn5c-AMetaCaptionLine .css-or44y0-DivContainer')
+            video_desc = await video_desc_element.inner_text() if video_desc_element else ''
+            print(f"動画{i+1} タイトル: {video_desc}")
 
-print("----- TikTok ページアクセス開始 -----") 
-driver.get("https://www.tiktok.com/@nogizaka46_official?lang=jp")
+            # URLを取得
+            video_url_element = await video_container.query_selector('.css-j7du6l-DivTagCardDesc .css-1wrhn5c-AMetaCaptionLine')
+            video_url = await video_url_element.get_attribute('href') if video_url_element else ''
+            print(f"動画{i+1} URL: {video_url}")
 
-print("----- 待機条件1: body 要素の出現 -----") 
-wait = WebDriverWait(driver, 120)
+            if video_desc not in existing_titles:
+                discord_notify.append({
+                    'title': video_desc,
+                    'url': video_url,
+                    'date': current_time,
+                })
 
-# 複数の待機条件をすべて満たすまで待つ
-wait.until(
-    lambda driver: (
-        EC.presence_of_element_located((By.TAG_NAME, 'body'))(driver) and
-        EC.presence_of_element_located((By.CLASS_NAME, 'css-hz5yk3-DivVideoFeedV2 ecyq5ls0'))(driver) and
-        EC.presence_of_element_located((By.CLASS_NAME, 'css-x6y88p-DivItemContainerV2'))(driver)
-    )
-)
+                item_elem = ET.SubElement(channel, "item")
+                ET.SubElement(item_elem, "title").text = video_desc
+                ET.SubElement(item_elem, "url").text = video_url
+                ET.SubElement(item_elem, "date").text = current_time
+                print(f"動画{i+1} 新規動画として追加しました。")
+            else:
+                print(f"動画{i+1} 既存動画のためスキップします。")
 
-print("body 要素、動画フィード、動画コンテナが見つかりました。") 
+        except Exception as e:
+            print(f"動画{i+1}でエラー: {e}")
 
-# スクロール前に動画コンテナを取得
-target_container = driver.find_element(By.CLASS_NAME, 'css-x6y88p-DivItemContainerV2')
+    print("----- Discord 通知開始 -----")
+    print(f"Discord 通知リスト: {discord_notify}")
 
-print("----- スクロール開始 -----") 
-# 3回スクロールして出てくる動画を取得
-for i in range(3):
-    driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
-    print(f"{i+1}回目のスクロール完了") 
-    time.sleep(5)  # スクロール間隔を延長
+    for video in discord_notify:
+        data = {
+            "content": f"新しい動画があるよ！\n日付: {video['date']}\nタイトル: {video['title']}\nURL: {video['url']}\n"
+        }
+        requests.post(webhook_url, data=data)
+        print(f"動画 '{video['title']}' の通知を送信しました。")
 
-print("----- 動画コンテナ取得 -----") 
-print(f"動画コンテナ: {target_container}")  # 取得したコンテナを出力
+    # XMLファイルを保存（エンコーディングをUTF-8に設定、改行も入れる）
+    tree = ET.ElementTree(root)
+    xml_str = ET.tostring(root, encoding='utf-8', method='xml')
 
-# ここから先は target_container を使って動画情報を取得する処理
-# ... 
+    # minidomできれいにフォーマットする
+    dom = minidom.parseString(xml_str)
+    pretty_xml_str = dom.toprettyxml(indent="  ")
 
-# XMLファイルを保存（エンコーディングをUTF-8に設定、改行も入れる）
-tree = ET.ElementTree(root)
-xml_str = ET.tostring(root, encoding='utf-8', method='xml')
+    # 空白行を取り除く
+    pretty_xml_str = os.linesep.join([s for s in pretty_xml_str.splitlines() if s.strip()])
 
-# minidomできれいにフォーマットする
-dom = minidom.parseString(xml_str)
-pretty_xml_str = dom.toprettyxml(indent="  ")
+    with open(xml_file, 'w', encoding='utf-8') as f:
+        f.write(pretty_xml_str)
+        print(f"XML ファイル '{xml_file}' を保存しました。")
 
-# 空白行を取り除く
-pretty_xml_str = os.linesep.join([s for s in pretty_xml_str.splitlines() if s.strip()])
+    await browser.close()
+    print("----- 処理完了 -----")
 
-with open(xml_file, 'w', encoding='utf-8') as f:
-    f.write(pretty_xml_str)
-    print(f"XML ファイル '{xml_file}' を保存しました。") 
+async def main():
+    async with async_playwright() as playwright:
+        await run(playwright)
 
-driver.quit()
-print("----- 処理完了 -----")
+asyncio.run(main())
