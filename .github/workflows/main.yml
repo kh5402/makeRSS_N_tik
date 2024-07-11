@@ -47,6 +47,10 @@ jobs:
     - name: Install Playwright # Playwright をインストール
       run: pip install playwright
       
+    - name: Install Playwright browsers
+      run: npx playwright install 
+
+      
     - name: Run Selenium script
       run: python N_tik.py
       timeout-minutes: 10
